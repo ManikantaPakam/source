@@ -1,4 +1,4 @@
-/*--------------- language.html------------------*/
+/* --------------- language.html------------------
 body {
     font-family: Arial, sans-serif;
     background-color: #f0f0f0;
@@ -57,7 +57,7 @@ body {
     font-size: 40px;
 }
 /*---------------------index.html-------------------*/
- .center{
+ /*.center{
     margin-top:400px;
  } 
  .fa {
@@ -166,4 +166,4 @@ body {
         font-size:20px;
         
     }
-}
+} */

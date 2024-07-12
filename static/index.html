@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Web Speech Recorder</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="static/css/style.css">
+    <style>
+      .icons{
+        margin-left:300px;
+      }
+    </style>
+</head>
+<body>
+  <center>
+  <div class="image">
+    <img src="/static/images/logo.png" height=300px width=900px;>
+  </div>
+    <div class="center">
+      <a id="recordButton" onclick="toggleRecording1();"><i class="btn1 btn-outline-success" id="upVote" onclick=vote(this)><img src="/static/images/2.png" style="height:200px; width:200px;"></i></a>
+    </div>
+  </center>
+</body>
+<footer id="footer">
+  <div class="container d-md-flex py-4" >
+      <div class="container">
+          <div class="copyrights">
+              &copy; 2023 &nbsp;<strong><span> Vistan Nextgen Pvt Ltd</span></strong>. All Rights Reserved
+          </div>
+      </div>
+  </div>
+  <div class="icons">
+    <a href="https://twitter.com/nextgenvistan" class="twitter"><i class="fa fa-twitter"></i></a>
+    <a href="https://www.facebook.com/vistannextgen1/" class="facebook"><i class="fa fa-facebook"></i></a>
+    <a href="https://www.instagram.com/vistannextgen/" class="instagram"><i class="fa fa-instagram"></i></a>
+    <a href="https://in.linkedin.com/company/vistannextgen" class="linkedin"><i class="fa fa-linkedin"></i></a>
+  </div>
+</footer>
+
+<script>
+//................................JavaScript for audio Recording.......................................
+    let recorder = true;
+    navigator
+        .mediaDevices
+        .getUserMedia({audio: true})
+        .then(stream => { handlerFunction(stream) });
+
+    function handlerFunction(stream) {
+        rec = new MediaRecorder(stream);
+        rec.ondataavailable = e => {
+            audioChunks.push(e.data);
+            if (rec.state == "inactive") {
+                let blob = new Blob(audioChunks, {type: 'audio/pcm'});
+                sendData(blob);
+            }
+        }
+    }
+
+
+
+    function sendData(data) {
+        var form = new FormData();
+        form.append('file', data, 'data.mp3');
+        form.append('title', 'data.mp3');
+        //Chrome inspector shows that the post data includes a file and a title.
+        $.ajax({
+            type: 'POST',
+            url: '/save-record',
+            data: form,
+            cache: false,
+            processData: false,
+            contentType: false
+        }).done(function(data) {
+            console.log(data);
+        });
+    }
+    
+//......................JavaScript for Recording Start and Stop Button Functionality..............................
+
+    startRecording.onclick = e => {
+        console.log('Recording are started..');
+        startRecording.disabled = true;
+        stopRecording.disabled = false;
+        audioChunks = [];
+        rec.start();
+    };
+
+    stopRecording.onclick = e => {
+        console.log("Recording are stopped.");
+        startRecording.disabled = false;
+        stopRecording.disabled = true;
+        rec.stop();
+    };
+
+//................................JavaScript for Toggle Button Functionality Working..............................
+
+function toggleRecording1() {
+    if (recorder == true){
+        console.log('enter');
+        audioChunks = [];
+        rec.start();
+        recorder = false
+    }else{
+        console.log("rec",recorder);
+        rec.stop();
+        location.reload();
+
+    }
+}
+
+function vote(element){
+        element.classList.toggle("active");
+}
+ 
+</script>
+</html>

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <title>Web Speech Recorder</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    
+ 
+
+</head>
+
+<body>
+    <!--<img src="logo.png"/>-->
+    <img src="/static/images/logo.png" height=300px width=900px; style="padding: 100px 0px 0px 15px">
+
+
+   <!-- <p style="padding: 350px 0px 0px 300px;">
+        <a class='btn1' id="startRecording"> <i>&#127897;</i> Start recording</a><br><br>
+        <a class='btn' id="stopRecording" disabled ><i>&#9209;</i> Stop recording</a>
+    </p> -->
+
+    <div class="center">
+    <button id="recordButton" onclick="toggleRecording1();">button</button>
+    </div>
+
+
+<style>
+.id{
+            padding: 20px;
+            margin: auto;
+            border: 2px solid black;
+            border-radius: 90px;
+        }
+        .center{
+            padding: 20px 0px 20px 150px;
+            width: 300px;
+            margin: auto;
+        }
+        .fa {
+  padding: 20px;
+  font-size: 30px;
+  width: 30px;
+  text-align: center;
+  text-decoration: none;
+  margin: 5px 2px;
+  border-radius: 50%;
+}
+.btn{
+  background-color: red;
+  border: none;
+  color: white;
+  padding: 15px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 30px; border-radius: 50px; padding: 50px; opacity:1;
+
+}
+.btn:hover{opacity:0.4; border-radius:70px;}
+.btn:active{background-color:black;}
+
+
+.btn1{
+    border: none;background-color: green;
+  color: black;
+  padding: 15px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 30px; border-radius: 50px; padding: 50px; opacity:1.5;
+}
+.btn1:hover{opacity:0.4; border-radius:70px;}
+.btn1:active{background-color:black; color:white;}
+.container1{
+    font-size: 80px;
+    padding-right:60px 10px 0px 0px;
+}
+.copyright{
+    padding:300px 5px 0px 10px;
+    font-size:40px;
+}
+
+</style>
+</body>
+
+
+ 
+ 
+<footer id="footer">
+<div class="container d-md-flex py-4" >
+<div class="container" align="left">
+<div class="copyright">
+&copy; 2023 &nbsp;<strong><span> Vistan Nextgen Pvt Ltd</span></strong>. All Rights Reserved
+</div><br><br><br>
+</div>
+<div class="container1" align="right">
+<a href="https://twitter.com/nextgenvistan" class="twitter"><i class="fa fa-twitter" style="color:dodgerblue"></i></a>
+<a href="https://www.facebook.com/vistannextgen1/" class="facebook"><i class="fa fa-facebook"></i></a>
+<a href="https://www.instagram.com/vistannextgen/" class="instagram"><i class="fa fa-instagram" style="color: Hex: #E1306C"></i></a>
+<a href="https://in.linkedin.com/company/vistannextgen" class="linkedin"><i class="fa fa-linkedin" style="color:#0077b3"></i></a>
+</div>
+</div>
+</footer>
+ 
+ 
+
+<script>
+    let recorder = true;
+    navigator
+        .mediaDevices
+        .getUserMedia({audio: true})
+        .then(stream => { handlerFunction(stream) });
+
+    function handlerFunction(stream) {
+        rec = new MediaRecorder(stream);
+        rec.ondataavailable = e => {
+            audioChunks.push(e.data);
+            if (rec.state == "inactive") {
+                let blob = new Blob(audioChunks, {type: 'audio/pcm'});
+                sendData(blob);
+            }
+        }
+    }
+
+
+
+    function sendData(data) {
+        var form = new FormData();
+        form.append('file', data, 'data.mp3');
+        form.append('title', 'data.mp3');
+        //Chrome inspector shows that the post data includes a file and a title.
+        $.ajax({
+            type: 'POST',
+            url: '/save-record',
+            data: form,
+            cache: false,
+            processData: false,
+            contentType: false
+        }).done(function(data) {
+            console.log(data);
+        });
+    }
+
+    startRecording.onclick = e => {
+        console.log('Recording are started..');
+        startRecording.disabled = true;
+        stopRecording.disabled = false;
+        audioChunks = [];
+        rec.start();
+    };
+
+    stopRecording.onclick = e => {
+        console.log("Recording are stopped.");
+        startRecording.disabled = false;
+        stopRecording.disabled = true;
+        rec.stop();
+    };
+// function toggleRecording(button) {
+// console.log('enter');
+//             if (button.classList.contains('recording')) {
+//           console.log("Recording are stopped.");
+      
+//         rec.stop();
+// button.classList.remove('recording');
+//                 button.innerHTML = '<img class="id" src="{{ url_for('static', filename = 'images/microphone_idle.png') }}" alt="Record">';
+//             } 
+// 	else {
+
+//  	console.log('Recording are started..');
+//         startRecording.disabled = true;
+//         rec.start();
+// button.classList.add('recording');
+//                 button.innerHTML = '<img class="id" src="{{ url_for('static', filename = 'images/microphone_recording.png') }}" alt="Stop">';
+//             }
+//         }
+
+
+
+function toggleRecording1() {
+    if (recorder == true){
+        console.log('enter');
+                audioChunks = [];
+
+        rec.start();
+        recorder = false
+    }else{
+        console.log("rec",recorder);
+        rec.stop();
+    }
+// console.log('enter');
+//                 audioChunks = [];
+
+//         rec.start();
+// setTimeout(function() 
+// {
+//     console.log("close")
+// rec.stop()}, 5000);
+}
+
+        
+        
+
+
+
+</script>
+</html>

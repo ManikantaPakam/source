@@ -5,41 +5,109 @@
     <title>Web Speech Recorder</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link rel="stylesheet" href="static/css/style.css">
     <style>
-      .icons{
-        margin-left:300px;
-      }
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(to right, #41a35f, #9cd2e7);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            height: 100vh;
+            justify-content: center;
+        }
+        .image img {
+            max-width: 40%;
+            height: auto;
+        }
+        .center {
+            margin-top: 20px;
+            /* margin-bottom: 300px; */
+        }
+        .center a {
+            display: inline-block;
+            padding: 20px;
+            border-radius: 50%;
+            background: #fff;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            transition: background 0.3s;
+        }
+        .center a.active {
+            background: #e63326;
+        }
+        .center img {
+            height: 100px;
+            width: 100px;
+        }
+        footer {
+            width: 100%;
+            padding: 20px 0;
+            background: rgba(0, 0, 0, 0.6);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: absolute;
+            bottom: 0;
+        }
+        .icons {
+            margin-top: 10px;
+        }
+        .icons a {
+            color: #fff;
+            margin: 0 10px;
+            font-size: 24px;
+            transition: color 0.3s;
+        }
+        .icons a:hover {
+            color: #ff7e5f;
+        }
     </style>
 </head>
 <body>
-  <center>
-  <div class="image">
-    <img src="/static/images/logo.png" height=300px width=900px;>
-  </div>
-    <div class="center">
-      <a id="recordButton" onclick="toggleRecording1();"><i class="btn1 btn-outline-success" id="upVote" onclick=vote(this)><img src="/static/images/2.png" style="height:200px; width:200px;"></i></a>
+    <center>
+        <div class="image">
+            <img src="/static/images/logo.png" alt="Logo">
+        </div>
+    </center>
+    <div class="form-group">
+        <label class="label" for="input"><b>Choose anyone:</b></label>
+        <select class="select" name="input" id="input" required>
+            <option value="">------------</option>
+            <option value="Conductor">Conductor</option>
+            <option value="Derrick Hand">Derrick Hand</option>
+            <option value="Police Officer">Police Officer</option>
+            <option value="Electricion">Electricion</option>
+            <option value="Repair Manager">Repair Manager</option>
+            <option value="Criminal Investigator">Criminal Investigator</option>
+            <option value="Plumber/PipeFitter">Plumber/PipeFitter</option>
+            <option value="Air Craft Mechanic">Air Craft Mechanic</option>
+            <option value="Production Manager">Production Manager</option>
+            <option value="Construction Manager">Construction Manager</option>
+            <option value="Driver">Driver</option>
+            <option value="General Constructor">General Constructor</option>
+        </select>
     </div>
-  </center>
+    <div class="center">
+        <a id="recordButton" onclick="toggleRecording1();">
+            <img src="/static/images/2.png" alt="Record">
+        </a>
+    </div>
+    <footer id="footer">
+        <div>
+            &copy; 2023 <strong>Vistan Nextgen Pvt Ltd</strong>. All Rights Reserved
+        </div>
+        <div class="icons">
+            <a href="https://twitter.com/nextgenvistan" class="twitter"><i class="fa fa-twitter"></i></a>
+            <a href="https://www.facebook.com/vistannextgen1/" class="facebook"><i class="fa fa-facebook"></i></a>
+            <a href="https://www.instagram.com/vistannextgen/" class="instagram"><i class="fa fa-instagram"></i></a>
+            <a href="https://in.linkedin.com/company/vistannextgen" class="linkedin"><i class="fa fa-linkedin"></i></a>
+        </div>
+    </footer>
 </body>
-<footer id="footer">
-  <div class="container d-md-flex py-4" >
-      <div class="container">
-          <div class="copyrights">
-              &copy; 2023 &nbsp;<strong><span> Vistan Nextgen Pvt Ltd</span></strong>. All Rights Reserved
-          </div>
-      </div>
-  </div>
-  <div class="icons">
-    <a href="https://twitter.com/nextgenvistan" class="twitter"><i class="fa fa-twitter"></i></a>
-    <a href="https://www.facebook.com/vistannextgen1/" class="facebook"><i class="fa fa-facebook"></i></a>
-    <a href="https://www.instagram.com/vistannextgen/" class="instagram"><i class="fa fa-instagram"></i></a>
-    <a href="https://in.linkedin.com/company/vistannextgen" class="linkedin"><i class="fa fa-linkedin"></i></a>
-  </div>
-</footer>
 
 <script>
-//................................JavaScript for audio Recording.......................................
     let recorder = true;
     navigator
         .mediaDevices
@@ -57,13 +125,10 @@
         }
     }
 
-
-
     function sendData(data) {
         var form = new FormData();
         form.append('file', data, 'data.mp3');
         form.append('title', 'data.mp3');
-        //Chrome inspector shows that the post data includes a file and a title.
         $.ajax({
             type: 'POST',
             url: '/save-record',
@@ -75,43 +140,27 @@
             console.log(data);
         });
     }
-    
-//......................JavaScript for Recording Start and Stop Button Functionality..............................
 
-    startRecording.onclick = e => {
-        console.log('Recording are started..');
-        startRecording.disabled = true;
-        stopRecording.disabled = false;
-        audioChunks = [];
-        rec.start();
-    };
-
-    stopRecording.onclick = e => {
-        console.log("Recording are stopped.");
-        startRecording.disabled = false;
-        stopRecording.disabled = true;
-        rec.stop();
-    };
-
-//................................JavaScript for Toggle Button Functionality Working..............................
-
-function toggleRecording1() {
-    if (recorder == true){
-        console.log('enter');
-        audioChunks = [];
-        rec.start();
-        recorder = false
-    }else{
-        console.log("rec",recorder);
-        rec.stop();
-        location.reload();
-
+    function toggleRecording1() {
+        const recordButton = document.getElementById('recordButton');
+        if (recorder == true){
+            console.log('enter');
+            audioChunks = [];
+            rec.start();
+            recordButton.classList.add('active');
+            recorder = false;
+        } else {
+            console.log("rec",recorder);
+            rec.stop();
+            recordButton.classList.remove('active');
+            location.reload();
+        }
     }
-}
 
-function vote(element){
+    function vote(element){
         element.classList.toggle("active");
-}
- 
+    }
 </script>
 </html>
+
+

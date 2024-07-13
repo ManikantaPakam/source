@@ -1,9 +1,12 @@
 import os
-from flask import Flask, flash, request, redirect, jsonify, url_for, render_template
+from flask import Flask, flash, request, redirect, jsonify, url_for
 from flask_mysqldb import MySQL
 import logging
 from werkzeug.security import generate_password_hash, check_password_hash
 import MySQLdb.cursors
+import logging
+from flask_login import UserMixin,login_required, current_user, LoginManager
+
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -25,14 +28,22 @@ app.config['MYSQL_DB'] = 'LanguageTranslation'
  
 mysql = MySQL(app)
 
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
 
-class User:
+@login_manager.user_loader
+def load_user(user_id):
+    return User.get(user_id) 
+
+
+class User(UserMixin):
     @staticmethod
-    def create_user(mysql, username, email, password):
+    def create_user(mysql, username, email, address, mobile, photo, password):
         cursor = mysql.connection.cursor()
         hashed_password = generate_password_hash(password)
         try:
-            cursor.execute('INSERT INTO users (username, email, password) VALUES (%s, %s, %s)', (username, email, hashed_password))
+            cursor.execute('INSERT INTO users (username, email, address, mobile, photo, password) VALUES (%s, %s, %s, %s, %s, %s)', (username, email, address, mobile, photo, hashed_password))
             mysql.connection.commit()
             return True
         except Exception as e:
@@ -40,6 +51,29 @@ class User:
             return False
         finally:
             cursor.close()
+    
+    @staticmethod
+    def login_user(mysql, email, password):
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute('SELECT * FROM users WHERE email = %s', (email,))
+        user = cursor.fetchone()
+        cursor.close()
+        if user and check_password_hash(user['password'], password):
+            return user
+        return None
+
+    @staticmethod
+    def get(user_id):
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute('SELECT * FROM users WHERE id = %s', (user_id,))
+        user = cursor.fetchone()
+        cursor.close()
+        if user:
+            return User(**user)
+        return None
+
+    def get_id(self):
+        return str(self.id)
 
     @staticmethod
     def login_user(mysql, email, password):
@@ -50,6 +84,36 @@ class User:
         if user and check_password_hash(user['password'], password):
             return user
         return None
+
+
+class selectlanguage:
+    @staticmethod
+    def select_language(mysql, username_FK, inputlanguage, outputlanguage):
+        cursor = mysql.connection.cursor()
+        try:
+            cursor.execute('INSERT INTO selectlanguage (username_FK, inputlanguage, outputlanguage) VALUES (%s, %s, %s)', (username_FK, inputlanguage, outputlanguage))
+            mysql.connection.commit()
+            return True
+        except Exception as e:
+            logging.error(f"Error:{e}")
+            return False
+        finally:
+            cursor.close()
+
+
+class selectprofile:
+    @staticmethod
+    def select_profile(mysql, username, inputlanguage, outputlanguage, selectedprofile):
+        cursor = mysql.connection.cursor()
+        try:
+            cursor.execute('INSERT INTO selectprofile (username, inputlanguage, outputlanguage, selectedprofile) VALUES (%s, %s, %s, %s)', (username, inputlanguage, outputlanguage, selectedprofile))
+            mysql.connection.commit()
+            return True
+        except Exception as e:
+            logging.error(f"Error:{e}")
+            return False
+        finally:
+            cursor.close()
 
 
 @app.route('/language')
@@ -63,11 +127,20 @@ def recorder():
 
 
 @app.route('/submit', methods=['POST'])
+@login_required
 def submit():
-    input_lang = request.form['input']
-    output_lang = request.form['output']
-    form_data.append({'input': input_lang, 'output': output_lang})
-    return redirect(url_for("recorder"))
+    username = current_user.user
+    print('Username_Print',username)
+    if request.method == 'POST':
+        input_lang = request.form['input']
+        output_lang = request.form['output']
+        if selectlanguage.select_language(mysql, username, input_lang, output_lang):
+            flash('Your account has been created! You are now able to log in', 'success')
+            return redirect(url_for("recorder"))
+        else:
+            flash('Registration failed. Please try again.', 'danger')
+    # form_data.append({'input': input_lang, 'output': output_lang})
+    # return redirect(url_for("recorder"))
 
 
 @app.route('/save-record', methods=['POST'])
@@ -90,12 +163,12 @@ def save_record():
 def register():
     if request.method == 'POST':
         username = request.form['username']
-        print('username',username)
         email = request.form['email']
-        print('email',email)
+        address = request.form['address']
+        mobile = request.form['mobile']
+        photo = request.form['profile']
         password = request.form['password']
-        print('password',password)
-        if User.create_user(mysql, username, email, password):
+        if User.create_user(mysql, username, email, address, mobile, photo, password):
             flash('Your account has been created! You are now able to log in', 'success')
             return redirect(url_for('login'))
         else:
@@ -115,6 +188,7 @@ def login():
         else:
             flash('Login Unsuccessful. Please check email and password', 'danger')
     return app.send_static_file('login.html')
+
 
 
 #-----------------------------End-------------------------------------

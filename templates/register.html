@@ -78,7 +78,7 @@
 </head>
 <body>
     <h1>Register</h1>
-    <form method="POST">
+    <form method="POST" enctype="multipart/form-data">
         <div class="form-group">
             <label for="username"><img src="static/images/profile.png" alt="Profile">Username:</label>
             <input type="text" name="username" required>
@@ -103,7 +103,8 @@
             <label for="password"><img src="static/images/lock.png" alt="Lock">Password:</label>
             <input type="password" name="password" required>
         </div>
-        <button type="submit">Register</button>
+        <button type="submit">Register</button><br><br>
+        <center><a href="{{ url_for('login') }}">If you already have an account?</a></center>
     </form>
 </body>
 </html>

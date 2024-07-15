@@ -69,33 +69,90 @@
         background: linear-gradient(to right, #41a35f, #9cd2e7);
     }
     footer {
-            width: 100%;
-            padding: 20px 0;
-            background: rgba(0, 0, 0, 0.6);
-            color: #fff;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            position: absolute;
-            bottom: 0;
+        width: 100%;
+        padding: 20px 0;
+        background: rgba(0, 0, 0, 0.6);
+        color: #fff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: absolute;
+        bottom: 0;
+    }
+    .icons {
+        margin-top: 10px;
+        text-align: center;
+    }
+    .icons a {
+        color: #fff;
+        margin: 0 10px;
+        font-size: 24px;
+        transition: color 0.3s;
+        text-align: center;
+    }
+    .icons a:hover {
+        color: #ff7e5f;
+    }
+    button {
+        width: 100%;
+        padding: 15px;
+        background: linear-gradient(to right, #41a35f, #9cd2e7);
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s;
+    }
+    button:hover {
+        background-color: #9cd2e7;
+    }
+    @media (max-width: 480px) {
+        form {
+            width: 90%;
         }
-        .icons {
-            margin-top: 10px;
-            text-align: center;
-        }
-        .icons a {
-            color: #fff;
-            margin: 0 10px;
-            font-size: 24px;
-            transition: color 0.3s;
-            text-align: center;
-        }
-        .icons a:hover {
-            color: #ff7e5f;
-        }
+    } 
+    .logout-button{
+        font-size: 25px;
+    }
+    .job-select {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: rgba(255, 255, 255, 0.8);
+        border-radius: 5px;
+        padding: 10px;
+    }
+    .user-info {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+        position: absolute;
+        top: 20px; 
+        left: 20px;
+    }
+    .user-info img {
+        height: 80px;
+        width: 80px;
+        border-radius: 50%;
+        margin-right: 15px;
+        border: 3px solid #fff;
+    }
+    .user-info h2 {
+        margin: 0;
+        font-size: 24px;
+        color: #fff;
+    }
 </style>
 </head>
 <body>
+    <div class="user-info">
+        <img src="{{ url_for('static', filename='users_photos/' + user.photo) }}" alt="Profile Photo">
+        <h2>Welcome {{ user.username }}</h2>
+    </div>
+<div class="job-select">
+    <button class="logout-button"><a href="{{ url_for('logout') }}"><i class="fa fa-sign-out"></i></a></button>
+</div>
 <center>
     <div class="image">
         <img src="/static/images/logo.png" alt="Logo">
@@ -144,19 +201,5 @@
         </div>
     </div>
 </footer>
-
-<script>
-    $.ajax({
-        url: '/submit',
-        method: 'POST',
-        data: {
-            input: 'value1',
-            output: 'value2'
-        },
-        success: function(response) {
-            console.log('Submission successful');
-        }
-    }); 
-</script>
 </body>
 </html>

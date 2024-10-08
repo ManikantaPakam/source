@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <title>Web Speech Recorder</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -29,10 +31,6 @@
             background: rgba(255, 255, 255, 0.8);
             border-radius: 5px;
             padding: 10px;
-        }
-        .center {
-            margin-top: 20px;
-            margin-bottom: 300px;
         }
         .center a {
             display: inline-block;
@@ -129,6 +127,41 @@
             font-size: 24px;
             color: #fff;
         }
+
+        .icon-btn {
+            display: flex; 
+            gap: 10px; 
+        }
+
+        .action-btn {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            border: none;
+            background: linear-gradient(to right, #41a35f, #9cd2e7);
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: background-color 0.3s;
+            color: black;
+            width: 120px;
+        }
+        
+        .repeat-btn {
+            text-align: center;
+            width: 100px;
+        }
+
+        #audio-text {
+            font-size: 20px;
+            padding: 10px;
+            border: 1px solid black;
+            color: orangered;
+            margin: 20px;
+            border-radius: 5px;
+            min-height: 50px;
+            white-space: pre-wrap;
+        }
     </style>
 </head>
 <body>
@@ -138,9 +171,9 @@
     </div>
     
     <div class="job-select">
-        <button class="logout-button"><a href="{{ url_for('logout') }}"><i class="fa fa-sign-out"></i></a></button><br><br>
+        <a href="{{ url_for('logout') }}"><button class="logout-button"><i class="fa fa-sign-out"></i></button></a><br><br>
         <form method="post">
-            <select class="select" name="job" id="job" required onchange="toggleSubmitButton();">
+            <select style="color: black;" class="select" name="job" id="job" required onchange="toggleSubmitButton();">
                 <option value="">Choose Your Job</option>
                 <option value="Conductor">Conductor</option>
                 <option value="Derrick Hand">Derrick Hand</option>
@@ -169,11 +202,25 @@
         <a id="recordButton" onclick="toggleRecording1();">
             <img src="/static/images/2.png" alt="Record">
         </a>
+    </div><br>
+    <div class="icon-btn">
+        <form id="voice-speed-form" method="post">
+            <select class="action-btn speed" name="voice-speed" required>
+                <option value="">voice speed</option>
+                <option value="0.85">0.85x</option>
+                <option value="1.0">1x</option>
+                <option value="1.2">1.2x</option>
+            </select>
+        </form>
+        <button class="action-btn repeat-btn" data-action="repeat" data-value="repeat" title="Repeat Voice">
+            <span title="Repeat Voice" class="glyphicon glyphicon-repeat"></span>&nbsp Repeat
+        </button>
     </div>
-    
+    <div id="audio-text"></div>
+
     <footer id="footer">
         <div>
-            &copy; 2023 <strong>Vistan Nextgen Pvt Ltd</strong>. All Rights Reserved
+            &copy; 2024 <strong>Vistan Nextgen Pvt Ltd</strong>. All Rights Reserved
         </div>
         <div class="icons">
             <a href="https://twitter.com/nextgenvistan" class="twitter"><i class="fa fa-twitter"></i></a>
@@ -240,6 +287,87 @@
                 submitButton.style.display = 'none';
             }
         }
+    </script>
+    
+    <script>
+        $('#voice-speed-form select').on('change', function () {
+            const selectedValue = $(this).val();
+    
+            if (selectedValue) {
+                $.ajax({
+                    url: '/ajax-update',
+                    type: 'POST',
+                    data: { 'voice-speed': selectedValue },
+                    success: function (response) {
+                        alert('Your data updated in your database successfully.');
+                    },
+                    error: function (error) {
+                        alert('Failed to update data.');
+                        console.error('Error:', error);
+                    }
+                });
+            }
+        });
+    
+        $('.repeat-btn').on('click', function () {
+            const buttonValue = $(this).data('value');
+            $.ajax({
+                url: '/ajax-update', 
+                type: 'POST',
+                data: { 'repeat_button': buttonValue },
+                success: function (response) {
+                    alert('Repeat button value saved successfully.');
+                },
+                error: function (error) {
+                    alert('Failed to save repeat button value.');
+                    console.error('Error:', error);
+                }
+            });
+        });
+    </script>
+
+    <script>
+        let currentText = "";
+
+        // Function to create the typewriter effect, displaying text word by word
+        function typewriterEffect(text, elementId) {
+            const words = text.split(" "); // Split the text into words
+            let i = 0;
+            const element = $(elementId);
+            element.text(""); // Clear the existing text
+            const interval = setInterval(() => {
+                if (i < words.length) {
+                    element.append(words[i] + " "); // Append one word at a time
+                    i++;
+                } else {
+                    clearInterval(interval); // Stop the interval when all words are displayed
+                }
+            }, 200); // Adjust speed by changing the time in milliseconds
+        }
+
+        function autoContentRefresh() {
+            $.ajax({
+                url: '/audio_text',  
+                type: 'GET',
+                success: function (response) {
+                    const audioText = response.latest_audio_text;
+                    if (audioText && audioText !== currentText) {  // Check if new text is different from the current text
+                        currentText = audioText; // Update the current text
+                        typewriterEffect(audioText, '#audio-text'); // Call the word-by-word animation function
+                    }
+                },
+                error: function (error) {
+                    console.error('Error fetching latest audio text:', error);
+                    $('#audio-text').text("Failed to fetch latest audio text.");
+                }
+            });
+        }
+
+        setInterval(autoContentRefresh, 1000);
+
+        $(document).ready(function () {
+            autoContentRefresh();
+        });
     </script>
 </body>
 </html>
